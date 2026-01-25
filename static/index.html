@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Go + D3.js Graph</title>
+    <!-- Link the latest D3 library -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        .bar {
+            fill: steelblue;
+        }
+        .bar:hover {
+            fill: brown;
+        }
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+    </style>
+</head>
+<body>
+    <h3>D3.js Bar Chart with Golang Backend</h3>
+    <svg width="600" height="400"></svg>
+
+    <script src="d3-graph.js"></script>
+</body>
+</html>
