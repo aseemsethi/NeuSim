@@ -1,44 +1,41 @@
 // d3-graph.js
-// Make sure d3.js is loaded before this file
+// Requires d3.js v6+
 
 document.addEventListener("DOMContentLoaded", () => {
-  const width = 800;
-  const height = 600;
 
-  // Create SVG canvas
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+
   const svg = d3
     .select("#graph")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .style("width", "100%")
+    .style("height", "100%");
 
-  // Fetch graph data from Go API
+  let simulation;
+
   fetch("/api/test")
-    .then(response => response.json())
-    .then(data => {
-      renderGraph(data);
-    })
-    .catch(error => {
-      console.error("Error fetching graph data:", error);
-    });
+    .then(res => res.json())
+    .then(data => initGraph(data))
+    .catch(err => console.error(err));
 
-  function renderGraph(graph) {
-    // Create force simulation
-    const simulation = d3
+  function initGraph(graph) {
+
+    simulation = d3
       .forceSimulation(graph.nodes)
       .force(
         "link",
         d3.forceLink(graph.links)
           .id(d => d.id)
           .distance(120)
-          .strength(1)
       )
       .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .alphaDecay(0.05); // cool down reasonably fast
 
-    // Draw links (edges)
-    const link = svg
-      .append("g")
+    // Links
+    const link = svg.append("g")
       .attr("stroke", "#999")
       .attr("stroke-opacity", 0.6)
       .selectAll("line")
@@ -47,11 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
       .append("line")
       .attr("stroke-width", d => Math.sqrt(d.value));
 
-    // Draw nodes
-    const node = svg
-      .append("g")
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 1.5)
+    // Nodes
+    const node = svg.append("g")
       .selectAll("circle")
       .data(graph.nodes)
       .enter()
@@ -60,19 +54,17 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("fill", d => colorByGroup(d.group))
       .call(drag(simulation));
 
-    // Add labels
-    const label = svg
-      .append("g")
+    // Labels
+    const label = svg.append("g")
       .selectAll("text")
       .data(graph.nodes)
       .enter()
       .append("text")
       .text(d => d.id)
-      .attr("font-size", "12px")
       .attr("dx", 15)
-      .attr("dy", ".35em");
+      .attr("dy", ".35em")
+      .attr("font-size", "12px");
 
-    // Tick handler
     simulation.on("tick", () => {
       link
         .attr("x1", d => d.source.x)
@@ -88,12 +80,18 @@ document.addEventListener("DOMContentLoaded", () => {
         .attr("x", d => d.x)
         .attr("y", d => d.y);
     });
+
+    // Let simulation settle, then pause
+    setTimeout(() => {
+      simulation.alpha(0);
+    }, 1500);
   }
 
-  // Drag behavior
+  // 🔁 Drag behavior: re-enable movement anytime
   function drag(simulation) {
+
     function dragstarted(event, d) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -104,19 +102,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function dragended(event, d) {
-      if (!event.active) simulation.alphaTarget(0);
-      d.fx = null;
-      d.fy = null;
+      d.fx = event.x;
+      d.fy = event.y;
+      simulation.alphaTarget(0); // cool back down
     }
 
-    return d3
-      .drag()
+    return d3.drag()
       .on("start", dragstarted)
       .on("drag", dragged)
       .on("end", dragended);
   }
 
-  // Color nodes by group
   function colorByGroup(group) {
     const colors = {
       1: "#1f77b4",
@@ -125,4 +121,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     return colors[group] || "#999";
   }
+
+  // Resize SVG only — no physics reset
+  window.addEventListener("resize", () => {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    svg.attr("viewBox", `0 0 ${width} ${height}`);
+  });
+
 });

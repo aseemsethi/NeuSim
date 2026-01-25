@@ -20,9 +20,9 @@ func main() {
 			{ID: "Node C", Group: 1},
 		},
 		Links: []Link{
-			{Source: "Node A", Target: "Node B", Value: 1},
-			{Source: "Node B", Target: "Node C", Value: 2},
-			{Source: "Node C", Target: "Node A", Value: 3},
+			{Source: "Node A", Target: "Node B", Value: 5},
+			{Source: "Node B", Target: "Node C", Value: 20},
+			{Source: "Node C", Target: "Node A", Value: 40},
 		},
 	}
 
