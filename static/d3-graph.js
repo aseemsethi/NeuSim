@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .data(graph.links)
       .enter()
       .append("line")
-      .attr("stroke-width", d => Math.sqrt(d.value))
+      .attr("stroke-width", d => Math.sqrt(d.weight))
       .attr("marker-end", "url(#arrow)");
 
     // NODES

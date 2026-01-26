@@ -23,13 +23,13 @@ func main() {
 			{ID: "Node F", Group: 2, Layer: 3},
 		},
 		Links: []Link{
-			{Source: "Node A", Target: "Node C", Value: 5},
-			{Source: "Node A", Target: "Node D", Value: 20},
-			{Source: "Node B", Target: "Node C", Value: 40},
-			{Source: "Node B", Target: "Node D", Value: 40},
-			{Source: "Node C", Target: "Node E", Value: 40},
-			{Source: "Node C", Target: "Node F", Value: 40},
-			{Source: "Node D", Target: "Node F", Value: 40},
+			{Source: "Node A", Target: "Node C", Weight: 5},
+			{Source: "Node A", Target: "Node D", Weight: 20},
+			{Source: "Node B", Target: "Node C", Weight: 40},
+			{Source: "Node B", Target: "Node D", Weight: 40},
+			{Source: "Node C", Target: "Node E", Weight: 40},
+			{Source: "Node C", Target: "Node F", Weight: 40},
+			{Source: "Node D", Target: "Node F", Weight: 40},
 		},
 	}
 

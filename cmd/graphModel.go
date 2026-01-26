@@ -11,7 +11,7 @@ type Node struct {
 type Link struct {
 	Source string `json:"source"`
 	Target string `json:"target"`
-	Value  int    `json:"value"`
+	Weight int    `json:"weight"`
 }
 
 // GraphData holds both nodes and links
