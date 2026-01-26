@@ -1,5 +1,5 @@
 // d3-graph.js
-// Full node editor: ID, Group, Layer
+// Full graph editor with layered layout and link value labels
 // Requires d3.js v6+
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,15 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 22)
     .attr("refY", 0)
-    .attr("markerWidth", 6)
-    .attr("markerHeight", 6)
+    .attr("markerWidth", 8)
+    .attr("markerHeight", 8)
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-5L10,0L0,5")
     .attr("fill", "#999");
 
   let simulation, graphData;
-  let link, node, label;
+  let link, linkLabel, node, label;
 
   fetch("/api/test")
     .then(res => res.json())
@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .force("charge", d3.forceManyBody().strength(-150))
       .alphaDecay(0.05);
 
+    // ---------- LINKS ----------
     link = svg.append("g")
       .attr("stroke", "#999")
       .attr("stroke-opacity", 0.6)
@@ -63,6 +64,19 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("stroke-width", d => Math.sqrt(d.value))
       .attr("marker-end", "url(#arrow)");
 
+    // ---------- LINK LABELS (VALUE) ----------
+    linkLabel = svg.append("g")
+      .selectAll("text")
+      .data(graph.links)
+      .enter()
+      .append("text")
+      .text(d => d.weight)
+      .attr("font-size", "11px")
+      .attr("fill", "#333")
+      .attr("text-anchor", "middle")
+      .attr("pointer-events", "none"); // prevents blocking drag
+
+    // ---------- NODES ----------
     node = svg.append("g")
       .selectAll("circle")
       .data(graph.nodes)
@@ -76,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .call(drag(simulation));
 
+    // ---------- NODE LABELS ----------
     label = svg.append("g")
       .selectAll("text")
       .data(graph.nodes)
@@ -86,12 +101,19 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("dy", ".35em")
       .attr("font-size", "12px");
 
+    // ---------- TICK ----------
     simulation.on("tick", () => {
+
       link
         .attr("x1", d => d.source.x)
         .attr("y1", d => d.source.y)
         .attr("x2", d => d.target.x)
         .attr("y2", d => d.target.y);
+
+      // Position link value at midpoint
+      linkLabel
+        .attr("x", d => (d.source.x + d.target.x) / 2)
+        .attr("y", d => (d.source.y + d.target.y) / 2);
 
       node
         .attr("cx", d => d.x)
@@ -105,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => simulation.alpha(0), 1200);
   }
 
-  // ---------- Layout by Layer ----------
+  // ---------- Layered Layout ----------
   function applyLayerLayout(graph) {
     const nodesByLayer = d3.group(graph.nodes, d => d.layer);
     const maxLayer = d3.max(graph.nodes, d => d.layer);
