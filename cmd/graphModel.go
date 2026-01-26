@@ -4,6 +4,7 @@ package main
 type Node struct {
 	ID    string `json:"id"`
 	Group int    `json:"group"`
+	Layer int    `json:"layer"`
 }
 
 // Link structure (golang), source and target will be IDs

@@ -1,4 +1,5 @@
 // d3-graph.js
+// Layered columns with evenly spaced vertical nodes
 // Requires d3.js v6+
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,6 +14,20 @@ document.addEventListener("DOMContentLoaded", () => {
     .style("width", "100%")
     .style("height", "100%");
 
+  // Arrow marker
+  svg.append("defs")
+    .append("marker")
+    .attr("id", "arrow")
+    .attr("viewBox", "0 -5 10 10")
+    .attr("refX", 22)
+    .attr("refY", 0)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,-5L10,0L0,5")
+    .attr("fill", "#999");
+
   let simulation;
 
   fetch("/api/test")
@@ -22,19 +37,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initGraph(graph) {
 
-    simulation = d3
-      .forceSimulation(graph.nodes)
+    // ----- GROUP NODES BY LAYER -----
+    const nodesByLayer = d3.group(graph.nodes, d => d.layer);
+    const maxLayer = d3.max(graph.nodes, d => d.layer);
+
+    // ----- X POSITION (COLUMNS) -----
+    const layerScale = d3.scalePoint()
+      .domain(d3.range(1, maxLayer + 1))
+      .range([120, width - 120]);
+
+    // ----- Y POSITION (STACKED PER LAYER) -----
+    nodesByLayer.forEach(nodes => {
+      const paddingTop = 80;
+      const paddingBottom = height - 80;
+      const step = (paddingBottom - paddingTop) / (nodes.length + 1);
+
+      nodes.forEach((node, i) => {
+        node.targetY = paddingTop + (i + 1) * step;
+      });
+    });
+
+    simulation = d3.forceSimulation(graph.nodes)
       .force(
         "link",
         d3.forceLink(graph.links)
           .id(d => d.id)
           .distance(120)
       )
-      .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .alphaDecay(0.05); // cool down reasonably fast
+      // ⬅️ column placement
+      .force(
+        "x",
+        d3.forceX(d => layerScale(d.layer)).strength(1)
+      )
+      // ⬆️ vertical placement (FIX)
+      .force(
+        "y",
+        d3.forceY(d => d.targetY).strength(1)
+      )
+      .force("charge", d3.forceManyBody().strength(-150))
+      .alphaDecay(0.05);
 
-    // Links
+    // LINKS
     const link = svg.append("g")
       .attr("stroke", "#999")
       .attr("stroke-opacity", 0.6)
@@ -42,9 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .data(graph.links)
       .enter()
       .append("line")
-      .attr("stroke-width", d => Math.sqrt(d.value));
+      .attr("stroke-width", d => Math.sqrt(d.value))
+      .attr("marker-end", "url(#arrow)");
 
-    // Nodes
+    // NODES
     const node = svg.append("g")
       .selectAll("circle")
       .data(graph.nodes)
@@ -54,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("fill", d => colorByGroup(d.group))
       .call(drag(simulation));
 
-    // Labels
+    // LABELS
     const label = svg.append("g")
       .selectAll("text")
       .data(graph.nodes)
@@ -81,36 +125,27 @@ document.addEventListener("DOMContentLoaded", () => {
         .attr("y", d => d.y);
     });
 
-    // Let simulation settle, then pause
-    setTimeout(() => {
-      simulation.alpha(0);
-    }, 1500);
+    // Let it settle, then sleep
+    setTimeout(() => simulation.alpha(0), 1200);
   }
 
-  // 🔁 Drag behavior: re-enable movement anytime
+  // DRAG (can reposition again)
   function drag(simulation) {
-
-    function dragstarted(event, d) {
-      simulation.alphaTarget(0.3).restart();
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-
-    function dragged(event, d) {
-      d.fx = event.x;
-      d.fy = event.y;
-    }
-
-    function dragended(event, d) {
-      d.fx = event.x;
-      d.fy = event.y;
-      simulation.alphaTarget(0); // cool back down
-    }
-
     return d3.drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended);
+      .on("start", (event, d) => {
+        simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      })
+      .on("drag", (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+      })
+      .on("end", (event, d) => {
+        d.fx = event.x;
+        d.fy = event.y;
+        simulation.alphaTarget(0);
+      });
   }
 
   function colorByGroup(group) {
@@ -122,11 +157,30 @@ document.addEventListener("DOMContentLoaded", () => {
     return colors[group] || "#999";
   }
 
-  // Resize SVG only — no physics reset
+  // Resize: recompute vertical spacing
   window.addEventListener("resize", () => {
     width = window.innerWidth;
     height = window.innerHeight;
     svg.attr("viewBox", `0 0 ${width} ${height}`);
+
+    if (!simulation) return;
+
+    const nodesByLayer = d3.group(simulation.nodes(), d => d.layer);
+
+    nodesByLayer.forEach(nodes => {
+      const paddingTop = 80;
+      const paddingBottom = height - 80;
+      const step = (paddingBottom - paddingTop) / (nodes.length + 1);
+
+      nodes.forEach((node, i) => {
+        node.targetY = paddingTop + (i + 1) * step;
+      });
+    });
+
+    simulation
+      .force("y", d3.forceY(d => d.targetY).strength(1))
+      .alpha(0.3)
+      .restart();
   });
 
 });
