@@ -1,5 +1,5 @@
 // d3-graph.js
-// Full graph editor with layered layout and link value labels
+// Editable graph with persistence to backend JSON file
 // Requires d3.js v6+
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,21 +20,24 @@ document.addEventListener("DOMContentLoaded", () => {
     .attr("viewBox", "0 -5 10 10")
     .attr("refX", 22)
     .attr("refY", 0)
-    .attr("markerWidth", 8)
-    .attr("markerHeight", 8)
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,-5L10,0L0,5")
     .attr("fill", "#999");
 
-  let simulation, graphData;
+  let simulation;
+  let graphData;
+
   let link, linkLabel, node, label;
 
-  fetch("/api/test")
+  // ---------- LOAD GRAPH ----------
+  fetch("/api/getGraph")
     .then(res => res.json())
     .then(data => {
       graphData = data;
-      initGraph(data);
+      initGraph(graphData);
     })
     .catch(err => console.error(err));
 
@@ -61,10 +64,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .data(graph.links)
       .enter()
       .append("line")
-      .attr("stroke-width", d => Math.sqrt(d.value))
+      .attr("stroke-width", d => Math.sqrt(d.weight))
       .attr("marker-end", "url(#arrow)");
 
-    // ---------- LINK LABELS (VALUE) ----------
+    // ---------- LINK LABELS ----------
     linkLabel = svg.append("g")
       .selectAll("text")
       .data(graph.links)
@@ -74,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("font-size", "11px")
       .attr("fill", "#333")
       .attr("text-anchor", "middle")
-      .attr("pointer-events", "none"); // prevents blocking drag
+      .attr("pointer-events", "none");
 
     // ---------- NODES ----------
     node = svg.append("g")
@@ -101,16 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("dy", ".35em")
       .attr("font-size", "12px");
 
-    // ---------- TICK ----------
     simulation.on("tick", () => {
-
       link
         .attr("x1", d => d.source.x)
         .attr("y1", d => d.source.y)
         .attr("x2", d => d.target.x)
         .attr("y2", d => d.target.y);
 
-      // Position link value at midpoint
       linkLabel
         .attr("x", d => (d.source.x + d.target.x) / 2)
         .attr("y", d => (d.source.y + d.target.y) / 2);
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => simulation.alpha(0), 1200);
   }
 
-  // ---------- Layered Layout ----------
+  // ---------- LAYER LAYOUT ----------
   function applyLayerLayout(graph) {
     const nodesByLayer = d3.group(graph.nodes, d => d.layer);
     const maxLayer = d3.max(graph.nodes, d => d.layer);
@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---------- Drag ----------
+  // ---------- DRAG ----------
   function drag(sim) {
     return d3.drag()
       .on("start", (e, d) => {
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
-  // ---------- Node Editor ----------
+  // ---------- NODE EDITOR ----------
   function openEditor(nodeData) {
     d3.select("#node-editor").remove();
 
@@ -212,10 +212,26 @@ document.addEventListener("DOMContentLoaded", () => {
         .alpha(0.6)
         .restart();
 
+      saveGraph(); // 🔴 PERSIST TO FILE
+
       editor.remove();
     });
 
     d3.select("#cancel-node").on("click", () => editor.remove());
+  }
+
+  // ---------- SAVE GRAPH ----------
+  function saveGraph() {
+    fetch("/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(graphData)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to save graph");
+      console.log("Graph saved successfully");
+    })
+    .catch(err => console.error("Save error:", err));
   }
 
   function colorByGroup(group) {
@@ -228,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return colors[group] || "#999";
   }
 
-  // ---------- Resize ----------
+  // ---------- RESIZE ----------
   window.addEventListener("resize", () => {
     width = window.innerWidth;
     height = window.innerHeight;
