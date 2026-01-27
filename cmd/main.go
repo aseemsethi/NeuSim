@@ -20,14 +20,17 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 func loadGraphData(filename string) (*GraphData, error) {
 	file, err := os.ReadFile(filename)
 	if err != nil {
+		log.Printf("loadGraphData: error reading file: %v", err)
 		return nil, err
 	}
 
-	var data GraphData
+	//var data GraphData
 	if err := json.Unmarshal(file, &data); err != nil {
+		log.Printf("loadGraphData: error unmarshaling file: %v", err)
 		return nil, err
 	}
 
+	log.Printf("loadGraphData: loaded data: %v", data)
 	return &data, nil
 }
 
@@ -61,11 +64,27 @@ func validateGraph(data GraphData) error {
 }
 
 // ---------- API: GET GRAPH ----------
+/*
+Sample Data Returned:
+{"nodes":[{"id":"Node A","group":1,"layer":1},
+{"id":"Node B","group":2,"layer":1},{"id":"Node C","group":1,"layer":2},
+{"id":"Node D","group":3,"layer":2},{"id":"Node E","group":3,"layer":3},
+{"id":"Node F","group":3,"layer":3}],
+"links":[{"source":"Node A","target":"Node C","weight":5},
+{"source":"Node A","target":"Node D","weight":3},
+{"source":"Node B","target":"Node C","weight":5},
+{"source":"Node B","target":"Node D","weight":3},
+{"source":"Node C","target":"Node E","weight":5},
+{"source":"Node C","target":"Node F","weight":3},
+{"source":"Node D","target":"Node F","weight":2}]}
+*/
 func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	//json.NewEncoder(w).Encode(data)
+	log.Printf("getGraphHandler: returning data: %v", data)
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
+		log.Printf("getGraphHandler: error marshaling data: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -134,6 +153,7 @@ func main() {
 
 	data, err := loadGraphData(graphFile)
 	if err != nil {
+		log.Printf("Main: error loading GraphData %v", err)
 		panic(err)
 	}
 
