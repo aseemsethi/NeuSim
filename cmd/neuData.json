@@ -12,7 +12,7 @@
     },
     {
       "id": "Node C",
-      "group": 1,
+      "group": 2,
       "layer": 2
     },
     {
@@ -22,12 +22,12 @@
     },
     {
       "id": "Node E",
-      "group": 3,
+      "group": 2,
       "layer": 3
     },
     {
       "id": "Node F",
-      "group": 3,
+      "group": 2,
       "layer": 3
     }
   ],

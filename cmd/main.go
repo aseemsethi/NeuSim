@@ -93,11 +93,11 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 
 // ---------- API: SAVE GRAPH ----------
 func saveGraphHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("saveGraphHandler: called")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request", http.StatusBadRequest)
@@ -106,9 +106,11 @@ func saveGraphHandler(w http.ResponseWriter, r *http.Request) {
 
 	var incoming GraphData
 	if err := json.Unmarshal(body, &incoming); err != nil {
+		log.Printf("saveGraphHandler: invalid JSON err: %v", err)
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+	log.Printf("saveGraphHandler: valid JSON: %v", incoming)
 
 	// Validate data integrity
 	if err := validateGraph(incoming); err != nil {

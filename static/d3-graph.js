@@ -221,18 +221,37 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------- SAVE GRAPH ----------
-  function saveGraph() {
-    fetch("/api/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(graphData)
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("Failed to save graph");
-      console.log("Graph saved successfully");
-    })
-    .catch(err => console.error("Save error:", err));
-  }
+ /* 
+  After D3 runs forceLink, it mutates your link objects.
+  Instead of strings, source and target become full node objects, i.e. 
+  it adds x, y coordinates and other stuff too. We need to thus clean this
+   graph before sending to backend.
+  */
+function saveGraph() {
+  const cleanedGraph = {
+    nodes: graphData.nodes.map(n => ({
+      id: n.id,
+      group: n.group,
+      layer: n.layer
+    })),
+    links: graphData.links.map(l => ({
+      source: typeof l.source === "object" ? l.source.id : l.source,
+      target: typeof l.target === "object" ? l.target.id : l.target,
+      weight: l.weight
+    }))
+  };
+
+  fetch("/api/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cleanedGraph)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Failed to save graph");
+    console.log("Graph saved successfully");
+  })
+  .catch(err => console.error("Save error:", err));
+}
 
   function colorByGroup(group) {
     const colors = {
