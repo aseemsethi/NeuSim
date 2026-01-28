@@ -420,4 +420,32 @@ function saveNode(nodeData) {
     initGraph(graphData);
   });
 
+  function relayoutGraph() {
+    if (!graphData || !simulation) return;
+
+    // Recompute target positions strictly by layer
+    applyLayerLayout(graphData);
+
+    // Release any manual drag locks
+    graphData.nodes.forEach(n => {
+      n.fx = null;
+      n.fy = null;
+    });
+
+    // Force nodes back into columns + rows
+    simulation
+      .force("x", d3.forceX(d => d.targetX).strength(1))
+      .force("y", d3.forceY(d => d.targetY).strength(1))
+      .alpha(1)          // full energy
+      .restart();
+
+    // Let it settle, then freeze again
+    setTimeout(() => simulation.alpha(0), 800);
+  }
+
+  document.getElementById("relayout-btn")
+  .addEventListener("click", () => {
+    relayoutGraph();
+  });
+
 });
