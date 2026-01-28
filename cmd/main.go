@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,17 +19,17 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 func loadGraphData(filename string) (*GraphData, error) {
 	file, err := os.ReadFile(filename)
 	if err != nil {
-		log.Printf("loadGraphData: error reading file: %v", err)
+		fmt.Printf("loadGraphData: error reading file: %v", err)
 		return nil, err
 	}
 
 	//var data GraphData
 	if err := json.Unmarshal(file, &data); err != nil {
-		log.Printf("loadGraphData: error unmarshaling file: %v", err)
+		fmt.Printf("loadGraphData: error unmarshaling file: %v", err)
 		return nil, err
 	}
 
-	log.Printf("loadGraphData: loaded data: %v", data)
+	fmt.Printf("loadGraphData: loaded data: %v\n", data)
 	return &data, nil
 }
 
@@ -45,7 +44,7 @@ func saveGraphToFile(data GraphData) error {
 
 // ---------- API: UPDATE SINGLE NODE ----------
 func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -55,7 +54,7 @@ func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	log.Printf("updateNodeHandler: Updated Node data %v", updatedNode)
+	fmt.Printf("updateNodeHandler: Updated Node data %v\n", updatedNode)
 
 	if updatedNode.ID == "" {
 		http.Error(w, "Node ID required", http.StatusBadRequest)
@@ -81,7 +80,7 @@ func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to save file", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("updateNodeHandler: Writing to file")
+	fmt.Printf("updateNodeHandler: Writing to file")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Node updated"))
@@ -100,7 +99,7 @@ type AddNodeRequest struct {
 		}
 */
 func addNodeHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("addNodeHandler: called")
+	fmt.Println("addNodeHandler: called")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -140,7 +139,7 @@ func addNodeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("addNodeHandler: new node %v", req)
+	fmt.Printf("addNodeHandler: new node %v\n", req)
 
 	// Append new node and link
 	data.Nodes = append(data.Nodes, req.Node)
@@ -151,31 +150,101 @@ func addNodeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("addNodeHandler: write new node to file %v", req)
+	fmt.Printf("addNodeHandler: write new node to file %v", req)
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Node added"))
 }
 
-// ---------- VALIDATE GRAPH ----------
-func validateGraph(data GraphData) error {
-	nodeIDs := make(map[string]bool)
+// ---------- API: ADD LINK ----------
+func addLinkHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("addLinkHandler: called\n")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var newLink Link
+	if err := json.NewDecoder(r.Body).Decode(&newLink); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Basic validation
+	if newLink.Source == "" || newLink.Target == "" {
+		http.Error(w, "Source and target are required", http.StatusBadRequest)
+		return
+	}
+
+	if newLink.Source == newLink.Target {
+		http.Error(w, "Source and target cannot be the same", http.StatusBadRequest)
+		return
+	}
+
+	// Check that source and target nodes exist
+	sourceExists := false
+	targetExists := false
 
 	for _, n := range data.Nodes {
-		if n.ID == "" {
-			return fmt.Errorf("node id cannot be empty")
+		if n.ID == newLink.Source {
+			sourceExists = true
 		}
-		nodeIDs[n.ID] = true
+		if n.ID == newLink.Target {
+			targetExists = true
+		}
 	}
 
+	if !sourceExists || !targetExists {
+		http.Error(w, "Source or target node does not exist", http.StatusBadRequest)
+		return
+	}
+
+	// Prevent duplicate links (optional but recommended)
 	for _, l := range data.Links {
-		if !nodeIDs[l.Source] || !nodeIDs[l.Target] {
-			return fmt.Errorf("invalid link: %s -> %s", l.Source, l.Target)
+		if l.Source == newLink.Source && l.Target == newLink.Target {
+			http.Error(w, "Link already exists", http.StatusConflict)
+			return
 		}
 	}
 
-	return nil
+	// Default weight if not provided
+	if newLink.Weight == 0 {
+		newLink.Weight = 1
+	}
+
+	// Append link
+	data.Links = append(data.Links, newLink)
+	fmt.Printf("addLinkHandler: newLink %v", newLink)
+
+	// Persist to file
+	if err := saveGraphToFile(data); err != nil {
+		http.Error(w, "Failed to save graph", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Link added successfully"))
 }
+
+// ---------- VALIDATE GRAPH ----------
+// func validateGraph(data GraphData) error {
+// 	nodeIDs := make(map[string]bool)
+
+// 	for _, n := range data.Nodes {
+// 		if n.ID == "" {
+// 			return fmt.Errorf("node id cannot be empty")
+// 		}
+// 		nodeIDs[n.ID] = true
+// 	}
+
+// 	for _, l := range data.Links {
+// 		if !nodeIDs[l.Source] || !nodeIDs[l.Target] {
+// 			return fmt.Errorf("invalid link: %s -> %s", l.Source, l.Target)
+// 		}
+// 	}
+
+// 	return nil
+// }
 
 // ---------- API: GET GRAPH ----------
 /*
@@ -195,81 +264,20 @@ Sample Data Returned:
 func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	//json.NewEncoder(w).Encode(data)
-	log.Printf("getGraphHandler: returning data: %v", data)
+	fmt.Printf("getGraphHandler: returning data: %v", data)
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
-		log.Printf("getGraphHandler: error marshaling data: %v", err)
+		fmt.Printf("getGraphHandler: error marshaling data: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Write(jsonBytes)
 }
 
-// ---------- API: SAVE GRAPH ----------
-func saveGraphHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("saveGraphHandler: called")
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, "Failed to read request", http.StatusBadRequest)
-		return
-	}
-
-	var incoming GraphData
-	if err := json.Unmarshal(body, &incoming); err != nil {
-		log.Printf("saveGraphHandler: invalid JSON err: %v", err)
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-	log.Printf("saveGraphHandler: valid JSON: %v", incoming)
-
-	// Validate data integrity
-	if err := validateGraph(incoming); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// Save to disk
-	if err := saveGraphToFile(incoming); err != nil {
-		http.Error(w, "Failed to save file", http.StatusInternalServerError)
-		return
-	}
-
-	// Update memory cache
-	data = incoming
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Saved successfully"))
-}
-
 func main() {
-
-	// data := GraphData{
-	// 	Nodes: []Node{
-	// 		{ID: "Node A", Group: 1, Layer: 1},
-	// 		{ID: "Node B", Group: 2, Layer: 1},
-	// 		{ID: "Node C", Group: 1, Layer: 2},
-	// 		{ID: "Node D", Group: 2, Layer: 2},
-	// 		{ID: "Node E", Group: 2, Layer: 3},
-	// 		{ID: "Node F", Group: 2, Layer: 3},
-	// 	},
-	// 	Links: []Link{
-	// 		{Source: "Node A", Target: "Node C", Weight: 5},
-	// 		{Source: "Node A", Target: "Node D", Weight: 20},
-	// 		{Source: "Node B", Target: "Node C", Weight: 40},
-	// 		{Source: "Node B", Target: "Node D", Weight: 40},
-	// 		{Source: "Node C", Target: "Node E", Weight: 40},
-	// 		{Source: "Node C", Target: "Node F", Weight: 40},
-	// 		{Source: "Node D", Target: "Node F", Weight: 40},
-	// 	},
-	// }
-
 	data, err := loadGraphData(graphFile)
 	if err != nil {
-		log.Printf("Main: error loading GraphData %v", err)
+		fmt.Printf("Main: error loading GraphData %v", err)
 		panic(err)
 	}
 
@@ -283,9 +291,10 @@ func main() {
 	//http.HandleFunc("/api/save", saveGraphHandler)
 	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/api/node/add", addNodeHandler)
+	http.HandleFunc("/api/link/add", addLinkHandler)
 	http.HandleFunc("/hello", helloHandler)
 
 	port := ":8080"
-	log.Printf("Server starting on http://localhost%s\n", port)
+	fmt.Printf("Server starting on http://localhost%s\n", port)
 	log.Fatal(http.ListenAndServe(port, nil))
 }

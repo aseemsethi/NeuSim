@@ -2,7 +2,7 @@
   "nodes": [
     {
       "id": "Node A",
-      "group": 2,
+      "group": 3,
       "layer": 1
     },
     {
@@ -34,6 +34,26 @@
       "id": "Node_1769607497234",
       "group": 2,
       "layer": 2
+    },
+    {
+      "id": "Node_1769607662404",
+      "group": 3,
+      "layer": 3
+    },
+    {
+      "id": "Node_1769612128736",
+      "group": 2,
+      "layer": 2
+    },
+    {
+      "id": "Node_1769614765801",
+      "group": 3,
+      "layer": 3
+    },
+    {
+      "id": "Node_1769614974911",
+      "group": 3,
+      "layer": 3
     }
   ],
   "links": [
@@ -75,6 +95,56 @@
     {
       "source": "Node A",
       "target": "Node_1769607497234",
+      "weight": 1
+    },
+    {
+      "source": "Node C",
+      "target": "Node_1769607662404",
+      "weight": 1
+    },
+    {
+      "source": "Node C",
+      "target": "Node_1769607497234",
+      "weight": 1
+    },
+    {
+      "source": "Node D",
+      "target": "Node_1769607662404",
+      "weight": 1
+    },
+    {
+      "source": "Node E",
+      "target": "Node F",
+      "weight": 1
+    },
+    {
+      "source": "Node_1769607497234",
+      "target": "Node E",
+      "weight": 1
+    },
+    {
+      "source": "Node A",
+      "target": "Node_1769612128736",
+      "weight": 1
+    },
+    {
+      "source": "Node_1769612128736",
+      "target": "Node C",
+      "weight": 1
+    },
+    {
+      "source": "Node C",
+      "target": "Node_1769614765801",
+      "weight": 1
+    },
+    {
+      "source": "Node C",
+      "target": "Node_1769614974911",
+      "weight": 1
+    },
+    {
+      "source": "Node_1769614974911",
+      "target": "Node E",
       "weight": 1
     }
   ]
