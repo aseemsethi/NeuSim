@@ -212,7 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .alpha(0.6)
         .restart();
 
-      saveGraph(); // 🔴 PERSIST TO FILE
+      // saveGraph();
+      saveNode(nodeData);
 
       editor.remove();
     });
@@ -252,6 +253,30 @@ function saveGraph() {
   })
   .catch(err => console.error("Save error:", err));
 }
+
+  /* 
+   We now use saveNode only as an optimization
+  */
+function saveNode(nodeData) {
+  const cleanNode = {
+    id: nodeData.id,
+    group: nodeData.group,
+    layer: nodeData.layer
+  };
+
+  fetch("/api/node", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cleanNode)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Failed to save node");
+    console.log("Node saved:", cleanNode.id);
+  })
+  .catch(err => console.error("Save error:", err));
+}
+
+
 
   function colorByGroup(group) {
     const colors = {

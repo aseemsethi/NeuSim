@@ -43,6 +43,50 @@ func saveGraphToFile(data GraphData) error {
 	return os.WriteFile(graphFile, bytes, 0644)
 }
 
+// ---------- API: UPDATE SINGLE NODE ----------
+func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var updatedNode Node
+	if err := json.NewDecoder(r.Body).Decode(&updatedNode); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+	log.Printf("updateNodeHandler: Updated Node data %v", updatedNode)
+
+	if updatedNode.ID == "" {
+		http.Error(w, "Node ID required", http.StatusBadRequest)
+		return
+	}
+
+	found := false
+	for i, node := range data.Nodes {
+		if node.ID == updatedNode.ID {
+			data.Nodes[i].Group = updatedNode.Group
+			data.Nodes[i].Layer = updatedNode.Layer
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		http.Error(w, "Node not found", http.StatusNotFound)
+		return
+	}
+
+	if err := saveGraphToFile(data); err != nil {
+		http.Error(w, "Failed to save file", http.StatusInternalServerError)
+		return
+	}
+	log.Printf("updateNodeHandler: Writing to file")
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Node updated"))
+}
+
 // ---------- VALIDATE GRAPH ----------
 func validateGraph(data GraphData) error {
 	nodeIDs := make(map[string]bool)
@@ -167,6 +211,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/api/getGraph", getGraphHandler)
 	http.HandleFunc("/api/save", saveGraphHandler)
+	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/hello", helloHandler)
 
 	port := ":8080"
