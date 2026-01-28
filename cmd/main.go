@@ -87,6 +87,76 @@ func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Node updated"))
 }
 
+type AddNodeRequest struct {
+	Node Node `json:"node"`
+	Link Link `json:"link"`
+}
+
+/*
+	 newNode:
+		{
+		  "node": { "id": "Node_123", "group": 1, "layer": 3 },
+		  "link": { "source": "Node_A", "target": "Node_123", "weight": 1 }
+		}
+*/
+func addNodeHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("addNodeHandler: called")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req AddNodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Validate node
+	if req.Node.ID == "" {
+		http.Error(w, "Node ID required", http.StatusBadRequest)
+		return
+	}
+
+	// Ensure node does not already exist
+	for _, n := range data.Nodes {
+		if n.ID == req.Node.ID {
+			http.Error(w, "Node already exists", http.StatusConflict)
+			return
+		}
+	}
+
+	// Validate link endpoints
+	sourceExists := false
+	for _, n := range data.Nodes {
+		if n.ID == req.Link.Source {
+			sourceExists = true
+			break
+		}
+	}
+
+	if !sourceExists {
+		http.Error(w, "Source node does not exist", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("addNodeHandler: new node %v", req)
+
+	// Append new node and link
+	data.Nodes = append(data.Nodes, req.Node)
+	data.Links = append(data.Links, req.Link)
+
+	if err := saveGraphToFile(data); err != nil {
+		http.Error(w, "Failed to save graph", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("addNodeHandler: write new node to file %v", req)
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("Node added"))
+}
+
 // ---------- VALIDATE GRAPH ----------
 func validateGraph(data GraphData) error {
 	nodeIDs := make(map[string]bool)
@@ -210,8 +280,9 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/api/getGraph", getGraphHandler)
-	http.HandleFunc("/api/save", saveGraphHandler)
+	//http.HandleFunc("/api/save", saveGraphHandler)
 	http.HandleFunc("/api/node", updateNodeHandler)
+	http.HandleFunc("/api/node/add", addNodeHandler)
 	http.HandleFunc("/hello", helloHandler)
 
 	port := ":8080"
