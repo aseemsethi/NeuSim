@@ -487,4 +487,22 @@ function saveNode(nodeData) {
     relayoutGraph();
   });
 
+  function runSimulation() {
+    fetch("/api/runSim", {
+      method: "POST"
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("Simulation failed");
+      }
+      console.log("Simulation triggered");
+    })
+    .catch(err => console.error("Run simulation error:", err));
+  }
+
+  document.getElementById("run-sim-btn")
+  .addEventListener("click", () => {
+    runSimulation();
+  });
+
 });

@@ -11,8 +11,8 @@
       "id": "Node B",
       "group": 2,
       "layer": 1,
-      "value": 0,
-      "activFn": ""
+      "value": 3,
+      "activFn": "tanH"
     },
     {
       "id": "Node C",

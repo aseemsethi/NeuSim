@@ -327,6 +327,11 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
+func runSimHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("runSimHandler: ruunning simulation...on %v\n", data)
+
+}
+
 func main() {
 	data, err := loadGraphData(graphFile)
 	if err != nil {
@@ -345,6 +350,8 @@ func main() {
 	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/api/node/add", addNodeHandler)
 	http.HandleFunc("/api/link/add", addLinkHandler)
+	http.HandleFunc("/api/runSim", runSimHandler)
+
 	http.HandleFunc("/hello", helloHandler)
 
 	port := ":8080"
