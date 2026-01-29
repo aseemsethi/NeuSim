@@ -226,6 +226,57 @@ func addLinkHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Link added successfully"))
 }
 
+// ---------- API: UPDATE LINK ----------
+func updateLinkHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var updatedLink Link
+	if err := json.NewDecoder(r.Body).Decode(&updatedLink); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	// Validation
+	if updatedLink.Source == "" || updatedLink.Target == "" {
+		http.Error(w, "Source and target are required", http.StatusBadRequest)
+		return
+	}
+
+	if updatedLink.Weight <= 0 {
+		http.Error(w, "Weight must be greater than zero", http.StatusBadRequest)
+		return
+	}
+
+	// Find and update the link
+	found := false
+	for i, link := range data.Links {
+		if link.Source == updatedLink.Source && link.Target == updatedLink.Target {
+			data.Links[i].Weight = updatedLink.Weight
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		http.Error(w, "Link not found", http.StatusNotFound)
+		return
+	}
+
+	fmt.Printf("updateLinkHandler: updated link %v", updatedLink)
+
+	// Persist to file
+	if err := saveGraphToFile(data); err != nil {
+		http.Error(w, "Failed to save graph", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Link updated successfully"))
+}
+
 // ---------- VALIDATE GRAPH ----------
 // func validateGraph(data GraphData) error {
 // 	nodeIDs := make(map[string]bool)
@@ -288,7 +339,7 @@ func main() {
 
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("/api/getGraph", getGraphHandler)
-	//http.HandleFunc("/api/save", saveGraphHandler)
+	http.HandleFunc("/api/link", updateLinkHandler)
 	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/api/node/add", addNodeHandler)
 	http.HandleFunc("/api/link/add", addLinkHandler)

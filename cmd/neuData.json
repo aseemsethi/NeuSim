@@ -60,7 +60,7 @@
     {
       "source": "Node A",
       "target": "Node C",
-      "weight": 5
+      "weight": 22
     },
     {
       "source": "Node A",
