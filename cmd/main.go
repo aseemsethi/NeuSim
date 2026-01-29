@@ -66,6 +66,8 @@ func updateNodeHandler(w http.ResponseWriter, r *http.Request) {
 		if node.ID == updatedNode.ID {
 			data.Nodes[i].Group = updatedNode.Group
 			data.Nodes[i].Layer = updatedNode.Layer
+			data.Nodes[i].Value = updatedNode.Value
+			data.Nodes[i].ActivFn = updatedNode.ActivFn
 			found = true
 			break
 		}

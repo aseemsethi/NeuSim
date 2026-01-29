@@ -245,6 +245,12 @@ function openNodeEditor(nodeData) {
     Layer:<br>
     <input id="edit-node-layer" type="number" value="${nodeData.layer}" /><br><br>
 
+    Value:<br>
+    <input id="edit-node-value" type="number" value="${nodeData.value}" /><br><br>
+
+    ActivFn:<br>
+    <input id="edit-node-activFn" value="${nodeData.activFn}" /><br><br>
+
     <button id="save-node">Save</button>
     <button id="cancel-node">Cancel</button>
   `);
@@ -256,6 +262,8 @@ function openNodeEditor(nodeData) {
     nodeData.id = document.getElementById("edit-node-id").value.trim();
     nodeData.group = +document.getElementById("edit-node-group").value;
     nodeData.layer = +document.getElementById("edit-node-layer").value;
+    nodeData.value = +document.getElementById("edit-node-value").value;
+    nodeData.activFn = document.getElementById("edit-node-activFn").value;
 
     // Update links if ID changed
     if (oldId !== nodeData.id) {
@@ -297,7 +305,9 @@ function saveNode(nodeData) {
     body: JSON.stringify({
       id: nodeData.id,
       group: nodeData.group,
-      layer: nodeData.layer
+      layer: nodeData.layer,
+      value: nodeData.value,
+      activFn: nodeData.activFn
     })
   })
   .catch(err => console.error("Save node error:", err));
