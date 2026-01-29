@@ -4,6 +4,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  console.log("DOMContentLoaded triggered");
   let width = window.innerWidth;
   let height = window.innerHeight;
 
@@ -487,23 +488,29 @@ function saveNode(nodeData) {
     relayoutGraph();
   });
 
-  function runSimulation() {
-    fetch("/api/runSim", {
+  function loadNetwork() {
+    fetch("/api/loadNet", {
       method: "POST"
     })
     .then(res => {
       if (!res.ok) {
-        throw new Error("Simulation failed");
+        throw new Error("loadNetwork failed");
       }
-      console.log("Simulation triggered");
+      console.log("loadNetwork triggered");
     })
-    .catch(err => console.error("Run simulation error:", err));
+    .catch(err => console.error("loadNetwork error:", err));
   }
 
-  document.getElementById("run-sim-btn")
+  document.getElementById("loadNet-btn")
   .addEventListener("click", () => {
-    runSimulation();
-  });
+    loadNetwork();  // creates and loads the new network into the file in backend
+    d3.select("#graph").remove();   // removes the graph from frontend JS
+    // trigger a rerun of the main JS code that pulls in the latest network from backend
+    window.document.dispatchEvent(new Event("DOMContentLoaded", {
+      bubbles: true,
+      cancelable: true
+      }));
+    });
 
   function addClickEffect(buttonId) {
   const btn = document.getElementById(buttonId);
@@ -513,14 +520,13 @@ function saveNode(nodeData) {
     btn.classList.add("clicked");
           console.log("button clicked");
 
-
     setTimeout(() => {
       btn.classList.remove("clicked");
-    }, 1000);
+    }, 2000);
   });
 }
 
-addClickEffect("run-sim-btn");
+addClickEffect("loadNet-btn");
 addClickEffect("relayout-btn");
 
 });

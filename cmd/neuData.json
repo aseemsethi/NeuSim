@@ -1,87 +1,92 @@
 {
   "nodes": [
     {
-      "id": "Node A",
-      "group": 2,
+      "id": "L1-N1",
+      "group": 1,
       "layer": 1,
-      "value": 2,
-      "activFn": "tanH"
+      "value": 0,
+      "activFn": "relu"
     },
     {
-      "id": "Node B",
-      "group": 2,
+      "id": "L1-N2",
+      "group": 1,
       "layer": 1,
-      "value": 3,
-      "activFn": "tanH"
+      "value": 0,
+      "activFn": "relu"
     },
     {
-      "id": "Node C",
-      "group": 3,
+      "id": "L2-N1",
+      "group": 2,
       "layer": 2,
       "value": 0,
-      "activFn": ""
+      "activFn": "relu"
     },
     {
-      "id": "Node D",
-      "group": 3,
+      "id": "L2-N2",
+      "group": 2,
       "layer": 2,
       "value": 0,
-      "activFn": ""
+      "activFn": "relu"
     },
     {
-      "id": "Node E",
+      "id": "L2-N3",
+      "group": 2,
+      "layer": 2,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
+      "id": "L3-N1",
       "group": 3,
       "layer": 3,
       "value": 0,
-      "activFn": ""
-    },
-    {
-      "id": "Node F",
-      "group": 2,
-      "layer": 3,
-      "value": 0,
-      "activFn": ""
+      "activFn": "relu"
     }
   ],
   "links": [
     {
-      "source": "Node A",
-      "target": "Node C",
-      "weight": 2
+      "source": "L1-N1",
+      "target": "L2-N1",
+      "weight": 1
     },
     {
-      "source": "Node A",
-      "target": "Node D",
-      "weight": 3
+      "source": "L1-N1",
+      "target": "L2-N2",
+      "weight": 1
     },
     {
-      "source": "Node B",
-      "target": "Node C",
-      "weight": 5
+      "source": "L1-N1",
+      "target": "L2-N3",
+      "weight": 1
     },
     {
-      "source": "Node B",
-      "target": "Node D",
-      "weight": 3
+      "source": "L1-N2",
+      "target": "L2-N1",
+      "weight": 1
     },
     {
-      "source": "Node C",
-      "target": "Node E",
-      "weight": 5
+      "source": "L1-N2",
+      "target": "L2-N2",
+      "weight": 1
     },
     {
-      "source": "Node C",
-      "target": "Node F",
-      "weight": 3
+      "source": "L1-N2",
+      "target": "L2-N3",
+      "weight": 1
     },
     {
-      "source": "Node D",
-      "target": "Node E",
-      "weight": 2
+      "source": "L2-N1",
+      "target": "L3-N1",
+      "weight": 1
     },
     {
-      "source": "Node A",
-      "target": "Node F",
+      "source": "L2-N2",
+      "target": "L3-N1",
+      "weight": 1
+    },
+    {
+      "source": "L2-N3",
+      "target": "L3-N1",
       "weight": 1
     }
   ]
