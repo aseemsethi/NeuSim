@@ -6,18 +6,35 @@
     <!-- Link the latest D3 library -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        .bar {
-            fill: steelblue;
-        }
-        .bar:hover {
-            fill: brown;
-        }
-        .axis path, .axis line {
-            fill: none;
-            stroke: #000;
-            shape-rendering: crispEdges;
-        }
-    </style>
+  .action-btn {
+    position: fixed;
+    right: 20px;
+    width: 160px;
+    height: 40px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid #999;
+    background-color: #f5f5f5;
+    color: #000;
+  }
+
+  #run-sim-btn {
+    bottom: 60px;
+  }
+
+  #relayout-btn {
+    bottom: 20px;
+  }
+
+  /* 🔥 HIGH-SPECIFICITY CLICK STATE */
+  button.action-btn.clicked {
+    background-color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: #ffffff !important;
+  }
+</style>
+
 </head>
 <body>
     <h3>Nodes in Neural Network</h3>
@@ -29,28 +46,13 @@
     <div id="graph"></div>
     <script src="d3-graph.js"></script>
 
-    <button id="run-sim-btn"
-        style="
-        position: fixed;
-        bottom: 60px;
-        right: 20px;
-        z-index: 3000;
-        padding: 8px 14px;
-        font-size: 13px;
-        cursor: pointer;">
-        Run Simulation
+    <button id="run-sim-btn" class="action-btn">
+    Run Simulation
     </button>
 
-    <button id="relayout-btn"
-        style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 3000;
-        padding: 8px 14px;
-        font-size: 13px;
-        cursor: pointer;">
-        Re-layout Graph
+    <button id="relayout-btn" class="action-btn">
+    Re-layout Graph
     </button>
+
 </body>
 </html>

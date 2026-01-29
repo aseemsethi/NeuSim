@@ -505,4 +505,22 @@ function saveNode(nodeData) {
     runSimulation();
   });
 
+  function addClickEffect(buttonId) {
+  const btn = document.getElementById(buttonId);
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    btn.classList.add("clicked");
+          console.log("button clicked");
+
+
+    setTimeout(() => {
+      btn.classList.remove("clicked");
+    }, 1000);
+  });
+}
+
+addClickEffect("run-sim-btn");
+addClickEffect("relayout-btn");
+
 });
