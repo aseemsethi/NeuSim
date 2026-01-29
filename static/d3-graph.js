@@ -54,11 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
         "link",
         d3.forceLink(graph.links)
           .id(d => d.id)
-          .distance(120)
+          .distance(180)
+          .strength(0.2)
       )
       .force("x", d3.forceX(d => d.targetX).strength(1))
       .force("y", d3.forceY(d => d.targetY).strength(1))
-      .force("charge", d3.forceManyBody().strength(-150))
+      .force("charge", d3.forceManyBody().strength(-30))
+      .alpha(1)  // full energy
       .alphaDecay(0.05);
 
     // ---------- LINKS ----------
@@ -363,25 +365,52 @@ function saveNode(nodeData) {
   }
 
   // ---------- LAYOUT ----------
+  // function applyLayerLayout(graph) {
+  //   const nodesByLayer = d3.group(graph.nodes, d => d.layer);
+  //   const maxLayer = d3.max(graph.nodes, d => d.layer);
+
+  //   const xScale = d3.scalePoint()
+  //     .domain(d3.range(1, maxLayer + 1))
+  //     .range([120, width - 120]);
+
+  //   nodesByLayer.forEach(nodes => {
+  //     const top = 80;
+  //     const bottom = height - 80;
+  //     const step = (bottom - top) / (nodes.length + 1);
+
+  //     nodes.forEach((n, i) => {
+  //       n.targetX = xScale(n.layer);
+  //       n.targetY = top + (i + 1) * step;
+  //     });
+  //   });
+  // }
+
   function applyLayerLayout(graph) {
-    const nodesByLayer = d3.group(graph.nodes, d => d.layer);
-    const maxLayer = d3.max(graph.nodes, d => d.layer);
+  const nodesByLayer = d3.group(graph.nodes, d => d.layer);
+  const maxLayer = d3.max(graph.nodes, d => d.layer);
 
-    const xScale = d3.scalePoint()
-      .domain(d3.range(1, maxLayer + 1))
-      .range([120, width - 120]);
+  const xScale = d3.scalePoint()
+    .domain(d3.range(1, maxLayer + 1))
+    .range([140, width - 140]);
 
-    nodesByLayer.forEach(nodes => {
-      const top = 80;
-      const bottom = height - 80;
-      const step = (bottom - top) / (nodes.length + 1);
+  nodesByLayer.forEach(nodes => {
+    const top = 80;
+    const bottom = height - 80;
+    const step = (bottom - top) / (nodes.length + 1);
 
-      nodes.forEach((n, i) => {
-        n.targetX = xScale(n.layer);
-        n.targetY = top + (i + 1) * step;
-      });
+    nodes.forEach((n, i) => {
+      n.targetX = xScale(n.layer);
+      n.targetY = top + (i + 1) * step;
+
+      // 🔒 HARD RESET X/Y to target positions
+      n.x = n.targetX;
+      n.y = n.targetY;
+      n.fx = null;
+      n.fy = null;
     });
-  }
+  });
+}
+
 
   // ---------- DRAG ----------
   function drag(sim) {
