@@ -8,13 +8,6 @@
       "activFn": "relu"
     },
     {
-      "id": "L1-N2",
-      "group": 1,
-      "layer": 1,
-      "value": 0,
-      "activFn": "relu"
-    },
-    {
       "id": "L2-N1",
       "group": 2,
       "layer": 2,
@@ -36,9 +29,44 @@
       "activFn": "relu"
     },
     {
+      "id": "L2-N4",
+      "group": 2,
+      "layer": 2,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
       "id": "L3-N1",
       "group": 3,
       "layer": 3,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
+      "id": "L3-N2",
+      "group": 3,
+      "layer": 3,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
+      "id": "L3-N3",
+      "group": 3,
+      "layer": 3,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
+      "id": "L3-N4",
+      "group": 3,
+      "layer": 3,
+      "value": 0,
+      "activFn": "relu"
+    },
+    {
+      "id": "L4-N1",
+      "group": 4,
+      "layer": 4,
       "value": 0,
       "activFn": "relu"
     }
@@ -60,18 +88,8 @@
       "weight": 1
     },
     {
-      "source": "L1-N2",
-      "target": "L2-N1",
-      "weight": 1
-    },
-    {
-      "source": "L1-N2",
-      "target": "L2-N2",
-      "weight": 1
-    },
-    {
-      "source": "L1-N2",
-      "target": "L2-N3",
+      "source": "L1-N1",
+      "target": "L2-N4",
       "weight": 1
     },
     {
@@ -80,13 +98,98 @@
       "weight": 1
     },
     {
+      "source": "L2-N1",
+      "target": "L3-N2",
+      "weight": 1
+    },
+    {
+      "source": "L2-N1",
+      "target": "L3-N3",
+      "weight": 1
+    },
+    {
+      "source": "L2-N1",
+      "target": "L3-N4",
+      "weight": 1
+    },
+    {
       "source": "L2-N2",
       "target": "L3-N1",
       "weight": 1
     },
     {
+      "source": "L2-N2",
+      "target": "L3-N2",
+      "weight": 1
+    },
+    {
+      "source": "L2-N2",
+      "target": "L3-N3",
+      "weight": 1
+    },
+    {
+      "source": "L2-N2",
+      "target": "L3-N4",
+      "weight": 1
+    },
+    {
       "source": "L2-N3",
       "target": "L3-N1",
+      "weight": 1
+    },
+    {
+      "source": "L2-N3",
+      "target": "L3-N2",
+      "weight": 1
+    },
+    {
+      "source": "L2-N3",
+      "target": "L3-N3",
+      "weight": 1
+    },
+    {
+      "source": "L2-N3",
+      "target": "L3-N4",
+      "weight": 1
+    },
+    {
+      "source": "L2-N4",
+      "target": "L3-N1",
+      "weight": 1
+    },
+    {
+      "source": "L2-N4",
+      "target": "L3-N2",
+      "weight": 1
+    },
+    {
+      "source": "L2-N4",
+      "target": "L3-N3",
+      "weight": 1
+    },
+    {
+      "source": "L2-N4",
+      "target": "L3-N4",
+      "weight": 1
+    },
+    {
+      "source": "L3-N1",
+      "target": "L4-N1",
+      "weight": 1
+    },
+    {
+      "source": "L3-N2",
+      "target": "L4-N1",
+      "weight": 1
+    },
+    {
+      "source": "L3-N3",
+      "target": "L4-N1",
+      "weight": 1
+    },
+    {
+      "source": "L3-N4",
+      "target": "L4-N1",
       "weight": 1
     }
   ]

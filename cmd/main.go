@@ -339,13 +339,29 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonBytes)
 }
 
-func loadNetworkHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("loadNetworkHandler: loading network...on %v\n", data)
-	jsonStr, err := GenerateJson([]int{2, 3, 1})
+// func loadNetworkHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Printf("loadNetworkHandler: loading network...on %v\n", data)
+// 	jsonStr, err := GenerateJson([]int{2, 3, 1})
+// 	if err != nil {
+// 		fmt.Printf("error generating JSON: %v", err)
+// 	}
+// 	fmt.Println(jsonStr)
+// 	os.WriteFile(graphFile, []byte(jsonStr), 0644)
+// }
+
+// API writes into the file but does not load it to the front end
+// For Graph loading, the button Load Network is clicked that reloads the DOM
+// The JSON payload is of the format [2, 3, 1]
+func generateGraphHandler(w http.ResponseWriter, r *http.Request) {
+	var layers []int
+
+	fmt.Printf("generateGraphHandler: generating graph...\n")
+	json.NewDecoder(r.Body).Decode(&layers)
+	jsonStr, err := GenerateJson(layers)
 	if err != nil {
 		fmt.Printf("error generating JSON: %v", err)
 	}
-	fmt.Println(jsonStr)
+	fmt.Println("generateGraphHandler: generating graph...v", jsonStr)
 	os.WriteFile(graphFile, []byte(jsonStr), 0644)
 }
 
@@ -367,7 +383,8 @@ func main() {
 	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/api/node/add", addNodeHandler)
 	http.HandleFunc("/api/link/add", addLinkHandler)
-	http.HandleFunc("/api/loadNet", loadNetworkHandler)
+	//http.HandleFunc("/api/loadNet", loadNetworkHandler)
+	http.HandleFunc("/api/generateGraph", generateGraphHandler)
 
 	http.HandleFunc("/hello", helloHandler)
 

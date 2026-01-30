@@ -488,22 +488,22 @@ function saveNode(nodeData) {
     relayoutGraph();
   });
 
-  function loadNetwork() {
-    fetch("/api/loadNet", {
-      method: "POST"
-    })
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("loadNetwork failed");
-      }
-      console.log("loadNetwork triggered");
-    })
-    .catch(err => console.error("loadNetwork error:", err));
-  }
+  // function loadNetwork() {
+  //   fetch("/api/loadNet", {
+  //     method: "POST"
+  //   })
+  //   .then(res => {
+  //     if (!res.ok) {
+  //       throw new Error("loadNetwork failed");
+  //     }
+  //     console.log("loadNetwork triggered");
+  //   })
+  //   .catch(err => console.error("loadNetwork error:", err));
+  // }
 
   document.getElementById("loadNet-btn")
   .addEventListener("click", () => {
-    loadNetwork();  // creates and loads the new network into the file in backend
+    //loadNetwork();  // creates and loads the new network into the file in backend
     d3.select("#graph").remove();   // removes the graph from frontend JS
     // trigger a rerun of the main JS code that pulls in the latest network from backend
     window.document.dispatchEvent(new Event("DOMContentLoaded", {
@@ -526,7 +526,88 @@ function saveNode(nodeData) {
   });
 }
 
+function openGenerateGraphEditor() {
+  d3.select("#generate-graph-editor").remove();
+
+  const editor = d3.select("body")
+    .append("div")
+    .attr("id", "generate-graph-editor")
+    .style("position", "fixed")
+    .style("top", "50%")
+    .style("left", "50%")
+    .style("transform", "translate(-50%, -50%)")
+    .style("background", "#fff")
+    .style("border", "1px solid #ccc")
+    .style("padding", "16px")
+    .style("min-width", "300px")
+    .style("z-index", 4000)
+    .style("box-shadow", "0 4px 12px rgba(0,0,0,0.2)");
+
+  editor.html(`
+    <strong>Generate Graph</strong><br><br>
+
+    Number of Layers:<br>
+    <input id="layer-count" type="number" min="1" value="3" /><br><br>
+
+    <div id="layer-inputs"></div>
+
+    <button id="generate-json-btn">Generate</button>
+    <button id="cancel-generate-btn">Cancel</button>
+  `);
+
+  const layerCountInput = document.getElementById("layer-count");
+  const layerInputsDiv = document.getElementById("layer-inputs");
+
+  function renderLayerInputs(count) {
+    layerInputsDiv.innerHTML = "";
+    for (let i = 1; i <= count; i++) {
+      layerInputsDiv.innerHTML += `
+        Layer ${i} nodes:
+        <input class="layer-node-count" type="number" min="0" value="1" /><br><br>
+      `;
+    }
+  }
+  renderLayerInputs(+layerCountInput.value);
+
+  layerCountInput.addEventListener("change", () => {
+    renderLayerInputs(+layerCountInput.value);
+  });
+
+  function sendGenerateRequest(layerNodeCounts) {
+    fetch("/api/generateGraph", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(layerNodeCounts)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to generate graph");
+      console.log("Graph generation request sent:", layerNodeCounts);
+    })
+    .catch(err => console.error("Generate graph error:", err));
+  }
+
+  document.getElementById("generate-json-btn")
+    .addEventListener("click", () => {
+      const values = Array.from(
+        document.getElementsByClassName("layer-node-count")
+      ).map(input => +input.value);
+
+      sendGenerateRequest(values);
+      editor.remove();
+    });
+
+  document.getElementById("cancel-generate-btn")
+    .addEventListener("click", () => editor.remove());
+}
+
+document.getElementById("generate-graph-btn")
+  .addEventListener("click", () => {
+    openGenerateGraphEditor();
+  });
+
 addClickEffect("loadNet-btn");
 addClickEffect("relayout-btn");
+addClickEffect("generate-graph-btn");
+
 
 });
