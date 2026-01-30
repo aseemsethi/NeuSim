@@ -69,6 +69,13 @@
       "layer": 4,
       "value": 0,
       "activFn": "relu"
+    },
+    {
+      "id": "Node_1769792475491",
+      "group": 3,
+      "layer": 4,
+      "value": 0,
+      "activFn": ""
     }
   ],
   "links": [
@@ -190,6 +197,11 @@
     {
       "source": "L3-N4",
       "target": "L4-N1",
+      "weight": 1
+    },
+    {
+      "source": "L3-N1",
+      "target": "Node_1769792475491",
       "weight": 1
     }
   ]
