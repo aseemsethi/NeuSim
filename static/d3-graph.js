@@ -488,18 +488,18 @@ function saveNode(nodeData) {
     relayoutGraph();
   });
 
-  // function loadNetwork() {
-  //   fetch("/api/loadNet", {
-  //     method: "POST"
-  //   })
-  //   .then(res => {
-  //     if (!res.ok) {
-  //       throw new Error("loadNetwork failed");
-  //     }
-  //     console.log("loadNetwork triggered");
-  //   })
-  //   .catch(err => console.error("loadNetwork error:", err));
-  // }
+  function runSim() {
+    fetch("/api/runSim", {
+      method: "GET"
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error("runSim failed");
+      }
+      console.log("runSim triggered");
+    })
+    .catch(err => console.error("runSim error:", err));
+  }
 
   document.getElementById("loadNet-btn")
   .addEventListener("click", () => {
@@ -605,9 +605,16 @@ document.getElementById("generate-graph-btn")
     openGenerateGraphEditor();
   });
 
+document.getElementById("runsim-btn")
+  .addEventListener("click", () => {
+    runSim();
+  });
+
 addClickEffect("loadNet-btn");
 addClickEffect("relayout-btn");
 addClickEffect("generate-graph-btn");
+addClickEffect("runsim-btn");
+
 
 
 });

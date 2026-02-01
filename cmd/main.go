@@ -318,7 +318,7 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 
 	data, err := loadGraphData(graphFile)
 	if err != nil {
-		fmt.Printf("Main: error loading GraphData %v", err)
+		fmt.Printf("Main: error loading GraphData %v\n", err)
 		panic(err)
 	}
 
@@ -332,7 +332,7 @@ func getGraphHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("getGraphHandler: returning data: %v", data)
 	jsonBytes, err := json.Marshal(data)
 	if err != nil {
-		fmt.Printf("getGraphHandler: error marshaling data: %v", err)
+		fmt.Printf("getGraphHandler: error marshaling data: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -365,6 +365,22 @@ func generateGraphHandler(w http.ResponseWriter, r *http.Request) {
 	os.WriteFile(graphFile, []byte(jsonStr), 0644)
 }
 
+func runSimHandler(w http.ResponseWriter, r *http.Request) {
+
+	// data, err := loadGraphData(graphFile)
+	// if err != nil {
+	// 	fmt.Printf("runSimHandler: error loading GraphData %v", err)
+	// 	panic(err)
+	// }
+
+	fmt.Printf("\n !! runSimHandler: Working with %d nodes and %d links\n",
+		len(data.Nodes),
+		len(data.Links),
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+}
+
 func main() {
 	// data, err := loadGraphData(graphFile)
 	// if err != nil {
@@ -383,7 +399,7 @@ func main() {
 	http.HandleFunc("/api/node", updateNodeHandler)
 	http.HandleFunc("/api/node/add", addNodeHandler)
 	http.HandleFunc("/api/link/add", addLinkHandler)
-	//http.HandleFunc("/api/loadNet", loadNetworkHandler)
+	http.HandleFunc("/api/runSim", runSimHandler)
 	http.HandleFunc("/api/generateGraph", generateGraphHandler)
 
 	http.HandleFunc("/hello", helloHandler)
