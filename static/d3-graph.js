@@ -493,12 +493,16 @@ function saveNode(nodeData) {
       method: "GET"
     })
     .then(res => {
-      if (!res.ok) {
-        throw new Error("runSim failed");
-      }
-      console.log("runSim triggered");
+    if (!res.ok) { 
+      throw new Error("Failed to generate graph");
+    }
+    console.log("runSim request recvd by backend:");
+    showToast("Run Simulator request received successfully at the backend");
     })
-    .catch(err => console.error("runSim error:", err));
+    .catch(err => {
+      console.error("Generate graph error: from backend", err);
+      showToast("Error in Run Simulator request from backend");
+    });
   }
 
   document.getElementById("loadNet-btn")
@@ -580,10 +584,16 @@ function openGenerateGraphEditor() {
       body: JSON.stringify(layerNodeCounts)
     })
     .then(res => {
-      if (!res.ok) throw new Error("Failed to generate graph");
-      console.log("Graph generation request sent:", layerNodeCounts);
+      if (!res.ok) { 
+        throw new Error("Failed to generate graph");
+      }
+      console.log("Graph generation request recvd by backend:", layerNodeCounts);
+      showToast("Generate Graph request received successfully");
     })
-    .catch(err => console.error("Generate graph error:", err));
+    .catch(err => {
+      console.error("Generate graph error: from backend", err);
+      showToast("Error in Generate Graph request from backend");
+    });
   }
 
   document.getElementById("generate-json-btn")
@@ -615,6 +625,20 @@ addClickEffect("relayout-btn");
 addClickEffect("generate-graph-btn");
 addClickEffect("runsim-btn");
 
+function showToast(message) {
+  // Remove any existing toast
+  const existing = document.getElementById("toast-notification");
+  if (existing) existing.remove();
 
+  const toast = document.createElement("div");
+  toast.id = "toast-notification";
+  toast.className = "toast";
+  toast.innerText = message;
 
+  toast.addEventListener("click", () => {
+    toast.remove();
+  });
+
+  document.body.appendChild(toast);
+}
 });
